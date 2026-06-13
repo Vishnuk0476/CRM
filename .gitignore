@@ -1,0 +1,48 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Security / Credentials
+.env
+.env.production
+.env.development
+
+# Migration data (one-time use, should not be in repo)
+migration_data.json
+*.sql
+!sql/*.sql
+
+# Build output
+dist/
+dist-ssr/
+
+# Bun lockfile (project uses npm)
+bun.lockb
+
+# Debug / test scripts
+public_html/test_*.php
+public_html/update_admin*.php
+public_html/clear_attempts.php
+public_html/api/test.php
+public_html/api/check_*.php

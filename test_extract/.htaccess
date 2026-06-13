@@ -1,0 +1,12 @@
+# Block access to sensitive files
+<FilesMatch "\.(env|sql|md|log|bak|git|gitignore)$">
+    Require all denied
+</FilesMatch>
+
+# Block directory listings
+Options -Indexes
+
+# Protect .htaccess itself
+<Files .htaccess>
+    Require all denied
+</Files>

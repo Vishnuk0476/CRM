@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shipment Update from Panya Global</title>
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      background-color: #f4f5f7;
+      color: #333333;
+      -webkit-font-smoothing: antialiased;
+    }
+    table { border-spacing: 0; border-collapse: collapse; width: 100%; }
+    td { padding: 0; }
+    .wrapper { width: 100%; background-color: #f4f5f7; padding: 40px 0; }
+    .main-container { max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05); }
+    
+    .header { background: linear-gradient(135deg, #0f172a 0%, #312e81 100%); padding: 48px 40px; text-align: center; }
+    .logo { height: 48px; margin-bottom: 24px; }
+    .header-title { color: #ffffff; font-size: 28px; font-weight: 700; margin: 0; letter-spacing: -0.5px; line-height: 1.2; }
+    
+    .status-badge {
+      display: inline-block;
+      background-color: #10b981;
+      color: #ffffff;
+      padding: 6px 16px;
+      border-radius: 50px;
+      font-size: 14px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: 20px;
+    }
+
+    .body-content { padding: 40px; }
+    .greeting { font-size: 20px; font-weight: 600; color: #0f172a; margin: 0 0 16px 0; }
+    .message { font-size: 16px; line-height: 1.6; color: #475569; margin: 0 0 32px 0; }
+
+    .details-card { background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; margin-bottom: 32px; }
+    .detail-label { font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; font-weight: 600; margin-bottom: 4px; }
+    .detail-value { font-size: 16px; color: #0f172a; font-weight: 500; }
+
+    .route-box {
+      background-color: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 16px;
+      margin-top: 16px;
+      text-align: center;
+    }
+
+    .cta-container { text-align: center; margin: 40px 0; }
+    .btn { display: inline-block; background-color: #4f46e5; color: #ffffff !important; text-decoration: none; font-size: 16px; font-weight: 600; padding: 16px 36px; border-radius: 50px; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3); transition: all 0.3s ease; }
+    .btn:hover { background-color: #4338ca; box-shadow: 0 6px 16px rgba(79, 70, 229, 0.4); }
+
+    .footer { background-color: #f8fafc; padding: 32px 40px; text-align: center; border-top: 1px solid #e2e8f0; }
+    .footer-text { color: #64748b; font-size: 14px; line-height: 1.5; margin: 0 0 16px 0; }
+    .copyright { color: #94a3b8; font-size: 12px; margin: 0; }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="main-container">
+      
+      <div class="header">
+        <img src="https://panyaglobal.com/assets/logo-white.png" alt="Panya Global Logo" class="logo" />
+        <h1 class="header-title">Shipment Update</h1>
+        <div class="status-badge">{{current_status}}</div>
+      </div>
+
+      <div class="body-content">
+        <h2 class="greeting">Hello {{customer_name}},</h2>
+        <p class="message">
+          There is an update regarding your shipment with Panya Global. Please find the latest details below:
+        </p>
+
+        <div class="details-card">
+          <table width="100%">
+            <tr>
+              <td width="50%" valign="top" style="padding-bottom: 24px;">
+                <div class="detail-label">LR Number</div>
+                <div class="detail-value" style="color: #4f46e5; font-weight: 700;">{{lr_number}}</div>
+              </td>
+              <td width="50%" valign="top" style="padding-bottom: 24px;">
+                <div class="detail-label">Expected Delivery</div>
+                <div class="detail-value">{{expected_delivery}}</div>
+              </td>
+            </tr>
+          </table>
+          
+          <div class="route-box">
+            <table width="100%">
+              <tr>
+                <td width="45%" align="right">
+                  <div class="detail-label">Origin</div>
+                  <div class="detail-value">{{origin_city}}</div>
+                </td>
+                <td width="10%" align="center">
+                  <span style="color: #cbd5e1; font-size: 24px;">&rarr;</span>
+                </td>
+                <td width="45%" align="left">
+                  <div class="detail-label">Destination</div>
+                  <div class="detail-value">{{destination_city}}</div>
+                </td>
+              </tr>
+            </table>
+          </div>
+        </div>
+
+        <p class="message" style="background-color: #f1f5f9; padding: 16px; border-radius: 8px; border-left: 4px solid #4f46e5;">
+          <strong>Latest Update:</strong> {{update_message}}
+        </p>
+
+        <div class="cta-container">
+          <a href="https://panyaglobal.com/track-shipment" class="btn">Track Live Status</a>
+        </div>
+      </div>
+
+      <div class="footer">
+        <p class="footer-text">
+          Need assistance? Call us directly at <a href="tel:+918800446447" style="color: #4f46e5; font-weight: 600; text-decoration: none;">+91 8800 446 447</a>
+        </p>
+        <p class="copyright">
+          &copy; 2024 Panya Global Packers & Movers. All rights reserved.
+        </p>
+      </div>
+
+    </div>
+  </div>
+</body>
+</html>
