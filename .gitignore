@@ -46,3 +46,7 @@ public_html/update_admin*.php
 public_html/clear_attempts.php
 public_html/api/test.php
 public_html/api/check_*.php
+*.py
+*.zip
+remote_api_error_log.txt
+fix_output.txt

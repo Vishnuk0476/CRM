@@ -17,7 +17,7 @@ const PAUSE_AFTER_ERASE = 600;
 
 // ─── Component ────────────────────────────────────────────────────────────────
 const IFCCIMembershipBanner = () => {
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(false);
   const [displayText, setDisplayText] = useState("");
   const [phraseIndex, setPhraseIndex] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
@@ -32,18 +32,33 @@ const IFCCIMembershipBanner = () => {
     return () => window.removeEventListener("resize", checkScreen);
   }, []);
 
-  // Delay initial render
+  // Show only when user has scrolled 30% or more down the page
   useEffect(() => {
-    const timer = setTimeout(() => setIsVisible(true), 1500);
-    return () => clearTimeout(timer);
+    const handleScroll = () => {
+      const scrollTop = window.scrollY;
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      if (docHeight <= 0) return;
+      const scrollPercent = (scrollTop / docHeight) * 100;
+      
+      if (scrollPercent >= 30) {
+        setIsVisible(true);
+      } else {
+        setIsVisible(false);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll(); // Check initially
+    
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Auto-collapse after 15 seconds
+  // Auto-collapse after 15 seconds if expanded
   useEffect(() => {
-    if (!isVisible) return;
+    if (!isVisible || !isExpanded) return;
     const timer = setTimeout(() => setIsExpanded(false), 15000);
     return () => clearTimeout(timer);
-  }, [isVisible]);
+  }, [isVisible, isExpanded]);
 
   // Typing effect
   useEffect(() => {

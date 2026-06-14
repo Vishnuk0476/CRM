@@ -26,7 +26,7 @@ if (import.meta.env.PROD) {
 if (import.meta.env.DEV) {
   const originalFetch = window.fetch;
   window.fetch = async (...args) => {
-    let [resource, config] = args;
+    const [resource, config] = args;
     if (typeof resource === 'string' && resource.startsWith('/api/')) {
       const url = new URL(resource, window.location.origin);
       url.searchParams.set('_t', Date.now().toString());

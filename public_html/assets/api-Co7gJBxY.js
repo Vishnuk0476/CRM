@@ -1,1 +1,0 @@
-async function r(r,t={}){const o=r.startsWith("http")?r:`https://www.panyaglobalmovers.com/api${r}`,s=await fetch(o,{...t,headers:{"Content-Type":"application/json",...t.headers}}),a=await s.json();if(!s.ok){if(!a.success&&a.error)throw new Error(a.error);throw new Error(`HTTP error! status: ${s.status}`)}return a}export{r as f};

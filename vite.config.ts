@@ -18,22 +18,7 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [
     react(),
-    // Defer non-critical CSS + inject critical inline CSS
-    {
-      name: "async-css",
-      transformIndexHtml: {
-        order: "post",
-        handler(html) {
-          const critical = `<style>body{margin:0;min-height:100vh;overflow-x:hidden;background:#000;font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}.fixed{position:fixed}.inset-0{top:0;right:0;bottom:0;left:0}.z-50{z-index:50}.min-h-screen{min-height:100vh}.overflow-hidden{overflow:hidden}.absolute{position:absolute}.relative{position:relative}.flex{display:flex}.flex-col{flex-direction:column}.items-center{align-items:center}.w-full{width:100%}.h-full{height:100%}.object-cover{object-fit:cover}@media(min-width:768px){.md\\:block{display:block}.lg\\:hidden{display:none}}</style>`;
-          return html
-            .replace("</head>", `${critical}</head>`)
-            .replace(
-              /<link rel="stylesheet" crossorigin href="(\.\/assets\/index-[^"]+\.css)">/g,
-              `<link rel="preload" as="style" href="$1" onload="this.onload=null;this.rel='stylesheet'" /><noscript><link rel="stylesheet" crossorigin href="$1"></noscript>`
-            );
-        },
-      },
-    },
+    // NOTE: async-css plugin removed — it was deferring CSS on Netlify causing layout shifts (FOUC)
     mode === "development" && componentTagger(),
   ].filter(Boolean),
   resolve: {
