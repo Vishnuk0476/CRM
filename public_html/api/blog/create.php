@@ -43,3 +43,4 @@ try {
 $id = $pdo->lastInsertId();
 logActivity($pdo, 'BLOG_POST_CREATED', 'blog_post', (string)$id, $input['slug'] ?? '');
 jsonResponse(true, ['id' => $id, 'message' => 'Blog post created successfully.'], null, 201);
+

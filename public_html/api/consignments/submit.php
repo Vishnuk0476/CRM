@@ -190,3 +190,4 @@ jsonResponse(true, [
     'email_sent'         => ($emailSent === true),
 ]);
 ?>
+

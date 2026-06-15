@@ -18,7 +18,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) jsonResponse(false, null, 'Valid email required.', 400);
     if (empty($phone)) jsonResponse(false, null, 'Phone required.', 400);
 
-    $pdo->prepare("INSERT INTO brochure_downloads (name, email, phone, company) VALUES (?,?,?,?)")->execute([$name, $email, $phone, $company]);
+    $newId = bin2hex(random_bytes(16));
+    $pdo->prepare("INSERT INTO brochure_downloads (id, name, email, phone, company) VALUES (?,?,?,?,?)")->execute([$newId, $name, $email, $phone, $company]);
 
     // Email admin notification
     $adminBody = "<p>A new brochure download lead has been received.</p>

@@ -97,3 +97,4 @@ $emailBody = "<p>A new testimonial has been submitted and is pending approval.</
 sendAdminNotification("New Testimonial — Pending Approval | {$safeName}", $emailBody);
 
 jsonResponse(true, ['id' => $id, 'message' => 'Testimonial submitted successfully. It will appear after approval.'], null, 201);
+

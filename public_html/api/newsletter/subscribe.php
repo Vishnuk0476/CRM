@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // Upsert: reactivate if already subscribed
-    $pdo->prepare("INSERT INTO newsletter_subscribers (email, name) VALUES (?, ?) ON DUPLICATE KEY UPDATE is_active = 1, name = COALESCE(VALUES(name), name)")
+    $pdo->prepare("INSERT INTO newsletter_subscribers (id, email, name) VALUES (UUID(), ?, ?) ON DUPLICATE KEY UPDATE is_active = 1, name = COALESCE(VALUES(name), name)")
         ->execute([$email, $name]);
 
     // Welcome email
@@ -55,3 +55,4 @@ $total = (int)$countStmt->fetchColumn();
 foreach ($rows as &$r) $r['is_active'] = (bool)$r['is_active'];
 
 jsonResponse(true, ['subscribers' => $rows, 'total' => $total]);
+

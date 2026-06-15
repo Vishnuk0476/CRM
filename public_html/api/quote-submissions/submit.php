@@ -43,11 +43,16 @@ if (strlen($phone) < 7) {
     jsonResponse(false, null, 'Please provide a valid phone number.', 400);
 }
 
+$newId = bin2hex(random_bytes(16));
+$ref = 'PG' . date('Ymd') . '-' . substr($newId, 0, 8);
+
 $stmt = $pdo->prepare("
-    INSERT INTO quote_submissions (name, email, phone, service_type, property_type, from_address, to_address, move_date, rooms, additional_info)
-    VALUES (:name,:email,:phone,:service_type,:property_type,:from_address,:to_address,:move_date,:rooms,:additional_info)
+    INSERT INTO quote_submissions (id, reference_number, name, email, phone, service_type, property_type, from_address, to_address, move_date, rooms, additional_info)
+    VALUES (:id, :reference_number, :name,:email,:phone,:service_type,:property_type,:from_address,:to_address,:move_date,:rooms,:additional_info)
 ");
 $stmt->execute([
+    ':id'              => $newId,
+    ':reference_number'=> $ref,
     ':name'            => $name,
     ':email'           => $email,
     ':phone'           => $phone,
@@ -59,10 +64,6 @@ $stmt->execute([
     ':rooms'           => $rooms,
     ':additional_info' => $additInfo ?: null,
 ]);
-
-// Determine Ref Number
-$refRow = $pdo->query("SELECT reference_number FROM quote_submissions ORDER BY created_at DESC LIMIT 1")->fetch();
-$ref    = $refRow['reference_number'] ?? 'PG-' . date('Ymd');
 
 // Build display vars cleanly
 $cName = $name; $cEmail = $email; $cPhone = $phone;

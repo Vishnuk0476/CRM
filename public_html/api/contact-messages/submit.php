@@ -21,7 +21,7 @@ if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) jsonResponse(fa
 if (empty($subject)) jsonResponse(false, null, 'Subject is required.', 400);
 if (empty($message)) jsonResponse(false, null, 'Message is required.', 400);
 
-$stmt = $pdo->prepare("INSERT INTO contact_messages (name, email, phone, subject, message) VALUES (?,?,?,?,?)");
+$stmt = $pdo->prepare("INSERT INTO contact_messages (id, name, email, phone, subject, message) VALUES (UUID(), ?,?,?,?,?)");
 $stmt->execute([$name, $email, $phone, $subject, $message]);
 
 // Email to admin
@@ -40,3 +40,4 @@ $custBody = "<p>Dear <strong>" . htmlspecialchars($name) . "</strong>,</p>
 sendEmail($email, "We received your message — Panya Global Relocation", emailTemplate("We've Received Your Message", $custBody));
 
 jsonResponse(true, ['message' => 'Your message has been sent. We will reply within 24 hours.'], null, 201);
+

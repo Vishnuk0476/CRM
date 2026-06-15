@@ -22,7 +22,7 @@ if ($path === 'conversation.php') {
 
     if (!$conv) {
         $token = bin2hex(random_bytes(16));
-        $pdo->prepare("INSERT INTO chat_conversations (session_id, session_token) VALUES (?, ?)")->execute([$sessionId, $token]);
+        $pdo->prepare("INSERT INTO chat_conversations (id, session_id, session_token) VALUES (UUID(), ?, ?)")->execute([$sessionId, $token]);
         $stmt = $pdo->prepare("SELECT * FROM chat_conversations WHERE session_id = ?");
         $stmt->execute([$sessionId]);
         $conv = $stmt->fetch();
@@ -54,7 +54,7 @@ if ($path === 'messages.php') {
         if (empty($convId) || empty($content)) jsonResponse(false, null, 'conversation_id and content required.', 400);
         if (!in_array($role, ['user','assistant'])) jsonResponse(false, null, 'Invalid role.', 400);
 
-        $pdo->prepare("INSERT INTO chat_messages (conversation_id, role, content) VALUES (?,?,?)")->execute([$convId, $role, $content]);
+        $pdo->prepare("INSERT INTO chat_messages (id, conversation_id, role, content) VALUES (UUID(), ?,?,?)")->execute([$convId, $role, $content]);
         $pdo->prepare("UPDATE chat_conversations SET updated_at = NOW() WHERE id = ?")->execute([$convId]);
 
         jsonResponse(true, ['message' => 'Message saved.'], null, 201);
@@ -62,3 +62,4 @@ if ($path === 'messages.php') {
 }
 
 jsonResponse(false, null, 'Invalid chat endpoint.', 404);
+
