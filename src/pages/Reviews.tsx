@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import WriteTestimonialForm from "@/components/reviews/WriteTestimonialForm";
 import { useToast } from "@/hooks/use-toast";
+import { testimonialService } from "@/services/apiService";
 
 interface MediaItem {
   url: string;
@@ -49,10 +50,10 @@ const Reviews = () => {
   const fetchTestimonials = async () => {
     setIsLoading(true);
     try {
-      const res = await fetch("/api/testimonials/list.php");
-      const json = await res.json();
-      if (json.success) {
-        setTestimonials(Array.isArray(json.data) ? json.data : (json.data?.testimonials || []));
+      const { data, error } = await testimonialService.list();
+      if (error) throw error;
+      if (data) {
+        setTestimonials(data as any[]);
       }
     } catch (err: unknown) {
       console.error("Error fetching testimonials:", err);
@@ -67,11 +68,7 @@ const Reviews = () => {
     try {
       const testimonial = testimonials.find((t) => t.id === id);
       if (!testimonial) return;
-      await fetch("/api/testimonials/update.php", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, helpful_count: testimonial.helpful_count + 1 }),
-      });
+      await testimonialService.update(id, { helpful_count: testimonial.helpful_count + 1 } as any);
       setTestimonials((prev) =>
         prev.map((t) =>
           t.id === id ? { ...t, helpful_count: t.helpful_count + 1 } : t
