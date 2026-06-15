@@ -137,6 +137,27 @@ export function PropertyList() {
     } catch {}
   };
 
+  const handleDeleteProperty = async (id: number) => {
+    if (!confirm("Are you sure you want to delete this property?")) return;
+    try {
+      const res = await fetch("/api/crm/properties.php", {
+        method: "DELETE",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        if (selectedProp?.id === id) setSelectedProp(null);
+        fetchProperties();
+      } else {
+        alert(json.error || "Delete failed");
+      }
+    } catch (e: any) {
+      alert("Delete failed: " + e.message);
+    }
+  };
+
   const filtered = properties.filter(p =>
     p.title?.toLowerCase().includes(search.toLowerCase()) ||
     p.location?.toLowerCase().includes(search.toLowerCase()) ||
@@ -206,10 +227,16 @@ export function PropertyList() {
                       <Tag className="w-3 h-3" /> {prop.property_type}
                     </span>
                   </div>
-                  <div className="absolute top-3 right-3">
+                  <div className="absolute top-3 right-3 flex items-center gap-2">
                     <span className={`px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider ${STATUS_COLORS[prop.status] || 'bg-gray-500 text-white'}`}>
                       {prop.status}
                     </span>
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); handleDeleteProperty(prop.id); }}
+                      className="bg-red-500/80 hover:bg-red-600 text-white w-7 h-7 rounded-lg flex items-center justify-center backdrop-blur-sm transition-colors"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
                   </div>
                 </div>
 
@@ -287,9 +314,14 @@ export function PropertyList() {
                       <MapPin className="w-4 h-4" /> {selectedProp.location || selectedProp.city}
                     </p>
                   </div>
-                  <Button variant="ghost" size="icon" onClick={() => setSelectedProp(null)} className="rounded-full hover:bg-gray-100">
-                    <X className="w-5 h-5 text-gray-500" />
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button variant="outline" className="border-red-200 text-red-600 hover:bg-red-50 gap-1.5 h-9" onClick={() => handleDeleteProperty(selectedProp.id)}>
+                      <Trash2 className="w-4 h-4" /> Delete
+                    </Button>
+                    <Button variant="ghost" size="icon" onClick={() => setSelectedProp(null)} className="rounded-full hover:bg-gray-100 h-9 w-9">
+                      <X className="w-5 h-5 text-gray-500" />
+                    </Button>
+                  </div>
                 </div>
                 <div className="text-3xl font-black text-indigo-600 mb-6">₹{Number(selectedProp.price || 0).toLocaleString('en-IN')}</div>
                 {selectedProp.description && (

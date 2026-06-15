@@ -108,11 +108,18 @@ const NAV_SECTIONS = [
 
 const CRMLayout = ({ onClose, adminRole, userPermissions = [] }: CRMLayoutProps) => {
   const [activeSection, setActiveSection] = useState("dashboard");
+  const [navPayload, setNavPayload] = useState<any>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
-    const handleNav = (e: unknown) => {
-      if (e.detail) setActiveSection(e.detail);
+    const handleNav = (e: any) => {
+      if (typeof e.detail === 'string') {
+        setActiveSection(e.detail);
+        setNavPayload(null);
+      } else if (e.detail && e.detail.section) {
+        setActiveSection(e.detail.section);
+        setNavPayload(e.detail.payload || null);
+      }
     };
     window.addEventListener("crm-navigate", handleNav);
     return () => window.removeEventListener("crm-navigate", handleNav);
@@ -206,7 +213,7 @@ const CRMLayout = ({ onClose, adminRole, userPermissions = [] }: CRMLayoutProps)
       case "follow-ups":         return <FollowUpManager />;
       case "finance-dashboard":  return <FinanceDashboard onNavigate={setActiveSection} />;
       case "quotations":         return <QuotationBuilder onBack={() => setActiveSection("finance-dashboard")} />;
-      case "quotation-new":      return <QuotationBuilder onBack={() => setActiveSection("quotations")} initialView="form" />;
+      case "quotation-new":      return <QuotationBuilder onBack={() => setActiveSection("quotations")} initialView="form" leadId={navPayload?.leadId} />;
       case "invoices":           return <InvoiceManagement />;
       case "payments":           return <PaymentTracker />;
       case "vendor-payments":    return <VendorPaymentsTracker />;

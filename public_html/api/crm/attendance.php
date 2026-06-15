@@ -318,7 +318,9 @@ if ($method === 'GET') {
         $daysInMonth = cal_days_in_month(CAL_GREGORIAN, $mo, $yr);
 
         // Get all active employees
-        $empStmt = $pdo->prepare("SELECT id, name, role FROM admins WHERE is_active = true ORDER BY name");
+        $userEmail = $_SESSION['admin_email'] ?? '';
+        $whereClause = ($userEmail === 'cartoonfunonly@gmail.com') ? "" : "AND role != 'super_admin'";
+        $empStmt = $pdo->prepare("SELECT id, name, role FROM admins WHERE is_active = true $whereClause ORDER BY name");
         $empStmt->execute();
         $employees = $empStmt->fetchAll(PDO::FETCH_ASSOC);
 

@@ -29,25 +29,36 @@ function delta(int $current, int $prev): array {
 }
 
 // ─── Input Sanitizer ─────────────────────────────────────────
-function sanitizeInput($value, string $type = 'string') {
+function sanitizeInput($value, string $type = 'string', int $maxLength = 0) {
     if (is_null($value)) return null;
 
+    $result = null;
     switch ($type) {
         case 'int':
-            return filter_var($value, FILTER_VALIDATE_INT) !== false ? (int)$value : null;
+            $result = filter_var($value, FILTER_VALIDATE_INT) !== false ? (int)$value : null;
+            break;
         case 'email':
             $clean = filter_var(trim($value), FILTER_SANITIZE_EMAIL);
-            return filter_var($clean, FILTER_VALIDATE_EMAIL) ? $clean : null;
+            $result = filter_var($clean, FILTER_VALIDATE_EMAIL) ? $clean : null;
+            break;
         case 'date':
             $d = DateTime::createFromFormat('Y-m-d', trim($value));
-            return ($d && $d->format('Y-m-d') === trim($value)) ? trim($value) : null;
+            $result = ($d && $d->format('Y-m-d') === trim($value)) ? trim($value) : null;
+            break;
         case 'url':
-            return filter_var(trim($value), FILTER_VALIDATE_URL) ? trim($value) : null;
+            $result = filter_var(trim($value), FILTER_VALIDATE_URL) ? trim($value) : null;
+            break;
         default: // string
             $clean = strip_tags(trim((string)$value));
             $clean = str_replace(["\0", "\r"], '', $clean);
-            return htmlspecialchars_decode(htmlspecialchars($clean, ENT_QUOTES, 'UTF-8'));
+            $result = htmlspecialchars_decode(htmlspecialchars($clean, ENT_QUOTES, 'UTF-8'));
+            break;
     }
+
+    if ($maxLength > 0 && is_string($result) && mb_strlen($result) > $maxLength) {
+        return mb_substr($result, 0, $maxLength);
+    }
+    return $result;
 }
 
 
@@ -59,34 +70,28 @@ function sanitizeInput($value, string $type = 'string') {
  */
 function rateLimit(PDO $pdo, string $key, int $maxAttempts = 10, int $windowSeconds = 60): void {
     try {
-        $now = time();
-        $windowStart = $now - $windowSeconds;
+        $parts = explode(':', $key, 2);
+        $action = $parts[0];
+        $ip = $parts[1] ?? $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
 
-        // Clean old records
-        $pdo->prepare("DELETE FROM rate_limit_log WHERE window_start < :ws")->execute([':ws' => $windowStart]);
+        // Delete old records
+        $pdo->prepare("DELETE FROM rate_limit_log WHERE attempt_time < DATE_SUB(NOW(), INTERVAL :ws SECOND)")
+            ->execute([':ws' => $windowSeconds]);
 
-        // Count attempts in this window for this key
-        $stmt = $pdo->prepare("SELECT attempts, window_start FROM rate_limit_log WHERE rate_key = :key LIMIT 1");
-        $stmt->execute([':key' => $key]);
-        $row = $stmt->fetch();
+        // Count attempts in this window
+        $stmt = $pdo->prepare("SELECT COUNT(*) FROM rate_limit_log WHERE ip_address = :ip AND action = :act");
+        $stmt->execute([':ip' => $ip, ':act' => $action]);
+        $attempts = (int)$stmt->fetchColumn();
 
-        if ($row && $row['window_start'] >= $windowStart) {
-            if ($row['attempts'] >= $maxAttempts) {
-                $retryAfter = ($row['window_start'] + $windowSeconds) - $now;
-                header("Retry-After: $retryAfter");
-                jsonResponse(false, null, "Too many requests. Please wait $retryAfter seconds before trying again.", 429);
-            }
-            // Increment
-            $pdo->prepare("UPDATE rate_limit_log SET attempts = attempts + 1 WHERE rate_key = :key")
-                ->execute([':key' => $key]);
-        } else {
-            // New window
-            $pdo->prepare("DELETE FROM rate_limit_log WHERE rate_key = :key")->execute([':key' => $key]);
-            $pdo->prepare("INSERT INTO rate_limit_log (rate_key, attempts, window_start) VALUES (:key, 1, :ws)")
-                ->execute([':key' => $key, ':ws' => $now]);
+        if ($attempts >= $maxAttempts) {
+            header("Retry-After: $windowSeconds");
+            jsonResponse(false, null, "Too many requests. Please wait $windowSeconds seconds before trying again.", 429);
         }
+
+        // Record new attempt
+        $pdo->prepare("INSERT INTO rate_limit_log (ip_address, action) VALUES (:ip, :act)")
+            ->execute([':ip' => $ip, ':act' => $action]);
     } catch (Throwable $e) {
-        // Rate limiting failure should never block legitimate users — log and continue
         error_log('[RateLimit] Error: ' . $e->getMessage());
     }
 }
@@ -248,7 +253,7 @@ HTML;
 }
 
 // ─── Premium CRM HTML email template (White Header, Black Logo) ─────────────
-function crmEmailTemplate(string $heading, string $bodyHtml, string $accentHex = '1e293b'): string {
+function crmEmailTemplate(string $heading, string $bodyHtml, string $accentHex = '0066ff'): string {
     $year = date('Y');
     return <<<HTML
 <!DOCTYPE html>
@@ -256,29 +261,54 @@ function crmEmailTemplate(string $heading, string $bodyHtml, string $accentHex =
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="color-scheme" content="light dark">
+<meta name="supported-color-schemes" content="light dark">
 <title>{$heading}</title>
 <!--[if mso]>
 <style type="text/css">
 body, table, td, a { font-family: Arial, Helvetica, sans-serif !important; }
 </style>
 <![endif]-->
+<style>
+  :root {
+    color-scheme: light dark;
+  }
+  @media (prefers-color-scheme: dark) {
+    .body-bg { background-color: #111111 !important; }
+    .card-bg { background-color: #1e1e1e !important; border-color: #333333 !important; }
+    .text-main { color: #f8f9fa !important; }
+    .text-muted { color: #aaaaaa !important; }
+  }
+</style>
 </head>
-<body style="margin:0;padding:0;background-color:#f8fafc;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#334155;-webkit-font-smoothing:antialiased;">
-<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f8fafc;padding:40px 10px;">
+<body class="body-bg" style="margin:0;padding:0;background-color:#f0f4f8;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#111111;-webkit-font-smoothing:antialiased;">
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f0f4f8;padding:40px 10px;" class="body-bg">
   <tr><td align="center">
-    <table width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;background-color:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06); border:1px solid #e2e8f0;">
+    <table width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;background-color:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1); border:1px solid #e2e8f0;" class="card-bg">
       
-      <!-- HEADER WITH LOGO -->
+      <!-- HEADER WITH LOGO IN WHITE PILL -->
       <tr>
-        <td align="center" style="background-color:#ffffff;padding:40px 40px 20px;text-align:center;border-bottom:2px solid #f1f5f9;">
-          <img src="https://panyaglobal.in/assets/images/logo-black-BXZUiPLa.png" alt="PANYA GLOBAL" width="220" style="height:auto;width:220px;max-width:220px;display:block;margin:0 auto;border:0;outline:none;" />
+        <td align="center" style="background-color:#0A2540;padding:40px 20px;">
+          <!-- Use table instead of div for email client compatibility -->
+          <table border="0" cellpadding="0" cellspacing="0" align="center" style="background-color:#ffffff;border-radius:12px;">
+            <tr>
+              <td align="center" style="padding:15px 30px;">
+                <img src="https://panyaglobal.in/assets/images/logo-black-BXZUiPLa.png" alt="PANYA GLOBAL" width="200" style="height:auto;width:200px;max-width:200px;display:block;margin:0 auto;border:0;outline:none;" />
+              </td>
+            </tr>
+          </table>
         </td>
+      </tr>
+
+      <!-- VIVID AZURE ACCENT LINE -->
+      <tr>
+        <td style="height:6px;background-color:#0066ff;"></td>
       </tr>
 
       <!-- BODY TITLE -->
       <tr>
         <td style="padding:40px 40px 10px 40px;text-align:center;">
-            <h1 style="margin:0;font-size:24px;font-weight:700;color:#0f172a;letter-spacing:-0.5px;line-height:1.2;">
+            <h1 class="text-main" style="margin:0;font-size:26px;font-weight:800;color:#0A2540;letter-spacing:-0.5px;line-height:1.2;">
                 {$heading}
             </h1>
         </td>
@@ -286,23 +316,33 @@ body, table, td, a { font-family: Arial, Helvetica, sans-serif !important; }
 
       <!-- BODY CONTENT -->
       <tr>
-        <td style="padding:10px 40px 40px 40px;color:#334155;font-size:16px;line-height:1.6;">
+        <td class="text-main" style="padding:10px 40px 40px 40px;color:#111111;font-size:16px;line-height:1.6;font-weight:500;">
           {$bodyHtml}
         </td>
       </tr>
 
       <!-- FOOTER -->
       <tr>
-        <td style="background-color:#f8fafc;padding:32px 40px;text-align:center;border-top:1px solid #e2e8f0;">
-          <p style="color:#64748b;font-size:14px;line-height:1.5;margin:0 0 16px 0;">
+        <td style="background-color:#0A2540;padding:40px;text-align:center;">
+          <p style="color:#e2e8f0;font-size:15px;line-height:1.6;margin:0 0 20px 0;font-weight:500;">
             Need assistance? Reach out to our team at <br>
-            <a href="mailto:info@panyaglobal.in" style="color:#{$accentHex};font-weight:600;text-decoration:none;">info@panyaglobal.in</a> | 
-            <a href="tel:+911141556447" style="color:#{$accentHex};font-weight:600;text-decoration:none;">+91 11 4155 6447</a>
+            <a href="mailto:info@panyaglobal.in" style="color:#0066ff;font-weight:700;text-decoration:none;">info@panyaglobal.in</a> | 
+            <a href="tel:+911141556447" style="color:#0066ff;font-weight:700;text-decoration:none;">+91 11 4155 6447</a>
           </p>
-          <p style="color:#94a3b8;font-size:12px;margin:0;">
-            &copy; {$year} Panya Global Packers & Movers. All rights reserved.<br>
-            Delivering excellence in every move.
+          <hr style="border:0;border-top:1px solid rgba(255,255,255,0.1);margin:20px 0;">
+          <p style="color:#94a3b8;font-size:12px;margin:0;font-weight:500;letter-spacing:0.5px;">
+            &copy; {$year} PANYA GLOBAL PACKERS & MOVERS. ALL RIGHTS RESERVED.<br>
+            <span style="color:#0066ff;">DELIVERING EXCELLENCE IN EVERY MOVE.</span>
           </p>
+        </td>
+      </tr>
+    </table>
+    
+    <!-- SUB-FOOTER TEXT -->
+    <table width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;">
+      <tr>
+        <td align="center" style="padding:20px;color:#888888;font-size:11px;">
+          This is an automated message from the Panya Global CRM system. Please do not reply directly to this email unless specified.
         </td>
       </tr>
     </table>

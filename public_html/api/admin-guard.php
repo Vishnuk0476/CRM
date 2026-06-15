@@ -30,12 +30,14 @@ if (!isset($_SESSION['admin_id'])) {
 // ─── Absolute session timeout (8 hours from login) ───────────────────────────
 if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time']) > 28800) {
     session_destroy();
+    setcookie('auth_token', '', time() - 3600, '/');
     jsonResponse(false, null, 'Session expired. Please log in again.', 401);
 }
 
 // ─── Idle timeout (30 minutes of inactivity) ─────────────────────────────────
 if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity']) > 1800) {
     session_destroy();
+    setcookie('auth_token', '', time() - 3600, '/');
     jsonResponse(false, null, 'Session timed out due to inactivity. Please log in again.', 401);
 }
 $_SESSION['last_activity'] = time();

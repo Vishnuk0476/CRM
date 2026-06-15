@@ -65,14 +65,18 @@ try {
     jsonResponse(false, null, $errMsg, 500);
 }
 
+$stmtId = $pdo->query("SELECT UUID()");
+$id = $stmtId->fetchColumn();
+
 $stmt = $pdo->prepare("
     INSERT INTO consignments
         (id, customer_name, customer_email, customer_phone, origin, destination, service_type, description, estimated_delivery, status, tracking_steps, lr_number)
     VALUES
-        (UUID(), :name, :email, :phone, :origin, :destination, :service_type, :description, :estimated_delivery, 'booked', :tracking_steps, :lr_number)
+        (:id, :name, :email, :phone, :origin, :destination, :service_type, :description, :estimated_delivery, 'booked', :tracking_steps, :lr_number)
 ");
 
 $stmt->execute([
+    ':id'                 => $id,
     ':name'               => $customerName,
     ':email'              => $customerEmail,
     ':phone'              => $customerPhone,
@@ -85,13 +89,12 @@ $stmt->execute([
     ':lr_number'          => $lrNumber
 ]);
 
-// Fetch the auto-generated tracking ID (safe: matches by email + origin to avoid race condition)
+// Fetch the auto-generated tracking ID safely using the exact UUID
 $fetchStmt = $pdo->prepare("
     SELECT id, consignment_number FROM consignments
-    WHERE customer_email = :email AND origin = :origin AND destination = :dest
-    ORDER BY created_at DESC LIMIT 1
+    WHERE id = :id
 ");
-$fetchStmt->execute([':email' => $customerEmail, ':origin' => $origin, ':dest' => $destination]);
+$fetchStmt->execute([':id' => $id]);
 $row = $fetchStmt->fetch();
 $consignmentNumber = $row['consignment_number'];
 $consignmentId     = $row['id'];

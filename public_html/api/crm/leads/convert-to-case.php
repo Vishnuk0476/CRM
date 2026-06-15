@@ -30,20 +30,27 @@ if ($lead['converted_to_case']) {
 try {
     $pdo->beginTransaction();
 
-    // Generate unique Case Number (e.g. C-1020, based on year and lead_id or random)
     $caseNumber = 'C-' . date('ym') . str_pad($leadId, 4, '0', STR_PAD_LEFT);
+
+    $leadStatus = $lead['status'] ?? 'enquiry';
+    $milestone = 'inquiry_received';
+    if ($leadStatus === 'quoted') {
+        $milestone = 'quotation_sent';
+    } elseif ($leadStatus === 'confirmed') {
+        $milestone = 'quotation_accepted';
+    }
 
     // Insert into Cases table
     $insertStmt = $pdo->prepare("
         INSERT INTO crm_cases (
             case_number, lead_id, client_name, client_phone, client_alternate_phone, client_email, company_name,
             relocation_type, origin_city, destination_city,
-            move_date_expected, assigned_consultant_id, assigned_at, case_status, is_gulf_nri,
+            move_date_expected, assigned_consultant_id, assigned_at, case_status, milestone, is_gulf_nri,
             family_adults, family_children, special_requirements, notes, created_by
         ) VALUES (
             :case_number, :lead_id, :client_name, :client_phone, :client_alternate_phone, :client_email, :company_name,
             :relocation_type, :origin_city, :destination_city,
-            :move_date_expected, :assigned_consultant_id, :assigned_at, 'active', :is_gulf_nri,
+            :move_date_expected, :assigned_consultant_id, :assigned_at, 'active', :milestone, :is_gulf_nri,
             :family_adults, :family_children, :special_requirements, :notes, :created_by
         )
     ");
@@ -65,6 +72,7 @@ try {
         ':move_date_expected' => $moveDate,
         ':assigned_consultant_id' => $lead['assigned_to'],
         ':assigned_at' => $lead['assigned_to'] ? date('Y-m-d H:i:s') : null,
+        ':milestone' => $milestone,
         ':is_gulf_nri' => $lead['is_gulf_nri'],
         ':family_adults' => $lead['family_adults'],
         ':family_children' => $lead['family_children'],
@@ -79,9 +87,17 @@ try {
     $updateLead = $pdo->prepare("UPDATE crm_leads SET converted_to_case = 1, case_id = :case_id, status = 'confirmed' WHERE id = :lead_id");
     $updateLead->execute([':case_id' => $caseId, ':lead_id' => $leadId]);
 
+    // Link existing quotations to this case
+    $pdo->prepare("UPDATE crm_quotations SET case_id = :case_id WHERE lead_id = :lead_id")
+        ->execute([':case_id' => $caseId, ':lead_id' => $leadId]);
+
+    // Link existing surveys to this case
+    $pdo->prepare("UPDATE crm_surveys SET case_id = :case_id WHERE lead_id = :lead_id")
+        ->execute([':case_id' => $caseId, ':lead_id' => $leadId]);
+
     // Add initial milestone
-    $mStmt = $pdo->prepare("INSERT INTO crm_case_milestones (case_id, milestone, milestone_date, notes, done_by) VALUES (?, 'case_created', NOW(), 'Case created from lead conversion', ?)");
-    $mStmt->execute([$caseId, $_SESSION['admin_id'] ?? null]);
+    $mStmt = $pdo->prepare("INSERT INTO crm_case_milestones (case_id, milestone, milestone_date, notes, done_by) VALUES (?, ?, NOW(), 'Case created from lead conversion', ?)");
+    $mStmt->execute([$caseId, $milestone, $_SESSION['admin_id'] ?? null]);
 
     $pdo->commit();
 

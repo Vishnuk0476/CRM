@@ -142,9 +142,14 @@ try {
     }
     logActivity($pdo, 'created_quotation', 'quotation', $quotationId, $qtNumber, ['client' => $clientName, 'total' => $financials['grand_total']]);
     
-    // Update case milestone
+    // Update case milestone & quoted amount
     if (!empty($data['case_id'])) {
-        $pdo->prepare("UPDATE crm_cases SET milestone = 'quotation_sent' WHERE id = ?")->execute([(int)$data['case_id']]);
+        $pdo->prepare("UPDATE crm_cases SET milestone = 'quotation_sent', total_quoted = ? WHERE id = ?")->execute([$financials['grand_total'], (int)$data['case_id']]);
+    }
+    
+    // Update lead status
+    if (!empty($data['lead_id'])) {
+        $pdo->prepare("UPDATE crm_leads SET status = 'quoted' WHERE id = ? AND status = 'enquiry'")->execute([(int)$data['lead_id']]);
     }
     
     // Send email to client

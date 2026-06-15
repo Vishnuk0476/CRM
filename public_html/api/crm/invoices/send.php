@@ -56,7 +56,7 @@ try {
     $message = 'Invoice marked as sent.';
 
     if (!empty($clientEmail)) {
-        $subject = "Your Premium Relocation Invoice: {$invNumber} - Panya Global";
+        $subject = "Your Relocation Invoice: {$invNumber} - Panya Global";
         
         $htmlBody = "
         <!DOCTYPE html>
@@ -178,7 +178,7 @@ try {
         
         $waText = urlencode(
             "Hello {$invoice['client_name']},\n\n" .
-            "Please find your premium tax invoice *{$invNumber}* from Panya Global Relocation.\n" .
+            "Please find your tax invoice *{$invNumber}* from Panya Global Relocation.\n" .
             "Grand Total: *INR {$amountFmt}*\n" .
             "Balance Due: *INR {$balanceFmt}*\n\n" .
             "View & Pay securely here: https://panyaglobal.in/client/invoice/{$invNumber}\n\n" .

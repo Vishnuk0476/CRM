@@ -213,18 +213,22 @@ export function CaseDetail({ caseId, onClose, onUpdated }: Props) {
             <p className="text-xs text-muted-foreground font-mono mt-1">Case #{c.case_number} • Lead L-PG-{String(c.lead_id).padStart(2, '0')}</p>
           </div>
           <div className="flex items-center gap-2">
-            <Button size="sm" variant="outline" className="bg-white border-violet-200 text-violet-700 hover:bg-violet-50" onClick={() => setShowAssignModal(true)}>
-              <User className="w-4 h-4 mr-2" /> Assign Team
-            </Button>
-            <Button size="sm" variant="outline" className="bg-white border-blue-200 text-blue-700 hover:bg-blue-50" onClick={() => { setShowSurveyForm(!showSurveyForm); setShowPackingForm(false); }}>
-              <ClipboardList className="w-4 h-4 mr-2" /> Schedule Survey
-            </Button>
-            <Button size="sm" variant="outline" className="bg-white border-orange-200 text-orange-700 hover:bg-orange-50" onClick={() => { setShowPackingForm(!showPackingForm); setShowSurveyForm(false); }}>
-              <Package className="w-4 h-4 mr-2" /> Schedule Packing
-            </Button>
-            <Button size="sm" className="bg-violet-600 hover:bg-violet-700 text-white shadow-lg shadow-violet-600/20" onClick={handleCreateQuote}>
-              <FileText className="w-4 h-4 mr-2" /> Create Quote
-            </Button>
+            {c.case_status !== 'completed' && (
+              <>
+                <Button size="sm" variant="outline" className="bg-white border-violet-200 text-violet-700 hover:bg-violet-50" onClick={() => setShowAssignModal(true)}>
+                  <User className="w-4 h-4 mr-2" /> Assign Team
+                </Button>
+                <Button size="sm" variant="outline" className="bg-white border-blue-200 text-blue-700 hover:bg-blue-50" onClick={() => { setShowSurveyForm(!showSurveyForm); setShowPackingForm(false); }}>
+                  <ClipboardList className="w-4 h-4 mr-2" /> Schedule Survey
+                </Button>
+                <Button size="sm" variant="outline" className="bg-white border-orange-200 text-orange-700 hover:bg-orange-50" onClick={() => { setShowPackingForm(!showPackingForm); setShowSurveyForm(false); }}>
+                  <Package className="w-4 h-4 mr-2" /> Schedule Packing
+                </Button>
+                <Button size="sm" className="bg-violet-600 hover:bg-violet-700 text-white shadow-lg shadow-violet-600/20" onClick={handleCreateQuote}>
+                  <FileText className="w-4 h-4 mr-2" /> Create Quote
+                </Button>
+              </>
+            )}
             <Button variant="ghost" size="icon" onClick={onClose} className="rounded-full">
               <X className="w-5 h-5" />
             </Button>
@@ -409,6 +413,7 @@ export function CaseDetail({ caseId, onClose, onUpdated }: Props) {
 
           <CaseFinancialSummary 
             caseId={caseId}
+            invoices={data.invoices || []}
             quoted={totalQuoted} 
             invoiced={totalInvoiced}
             collected={totalPaid}

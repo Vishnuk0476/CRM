@@ -21,7 +21,9 @@ function isTryingToManageAdmin($role) {
 }
 
 if ($method === 'GET') {
-    $stmt = $pdo->query("SELECT id, name, email, role, permissions, is_active, created_at, avatar FROM admins ORDER BY name ASC");
+    $userEmail = $_SESSION['admin_email'] ?? '';
+    $whereClause = ($userEmail === 'cartoonfunonly@gmail.com') ? "" : "WHERE role != 'super_admin'";
+    $stmt = $pdo->query("SELECT id, name, email, role, permissions, is_active, created_at, avatar FROM admins $whereClause ORDER BY name ASC");
     $users = $stmt->fetchAll();
     
     // Decode permissions JSON - ensure empty becomes object not array

@@ -14,6 +14,10 @@ export default defineConfig(({ mode }) => ({
         target: 'http://localhost/panyaglobal-local/public_html',
         changeOrigin: true,
       },
+      '/uploads': {
+        target: 'http://localhost/panyaglobal-local/public_html',
+        changeOrigin: true,
+      },
     },
   },
   plugins: [

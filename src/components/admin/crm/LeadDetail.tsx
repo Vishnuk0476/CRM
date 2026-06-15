@@ -24,7 +24,7 @@ const STATUS_STEPS = ["enquiry", "quoted", "confirmed", "in_transit", "completed
 const LeadDetail = ({ leadId, onClose, onUpdated, onEdit }: LeadDetailProps) => {
   const [lead, setLead] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"details" | "timeline" | "followups" | "calls" | "surveys">("details");
+  const [activeTab, setActiveTab] = useState<"details" | "timeline" | "quotations" | "followups" | "calls" | "surveys">("details");
   const [callNotes, setCallNotes] = useState("");
   const [callType, setCallType] = useState("outgoing");
   const [callDuration, setCallDuration] = useState("");
@@ -229,10 +229,10 @@ const LeadDetail = ({ leadId, onClose, onUpdated, onEdit }: LeadDetailProps) => 
 
         {/* Tabs */}
         <div className="px-6 border-b border-border flex gap-4 overflow-x-auto">
-          {(["details", "timeline", "followups", "calls", "surveys"] as const).map(tab => (
+          {(["details", "timeline", "quotations", "followups", "calls", "surveys"] as const).map(tab => (
             <button key={tab} onClick={() => setActiveTab(tab)}
               className={`py-2.5 text-sm font-medium border-b-2 transition-colors cursor-pointer whitespace-nowrap ${activeTab === tab ? "border-violet-500 text-violet-600" : "border-transparent text-muted-foreground hover:text-foreground"}`}>
-              {tab === "details" ? "Details" : tab === "timeline" ? "Timeline" : tab === "surveys" ? "Surveys" : tab === "followups" ? `Follow-ups (${lead.pending_followups || 0})` : `Calls (${lead.total_calls || 0})`}
+              {tab === "details" ? "Details" : tab === "timeline" ? "Timeline" : tab === "quotations" ? "Quotations" : tab === "surveys" ? "Surveys" : tab === "followups" ? `Follow-ups (${lead.pending_followups || 0})` : `Calls (${lead.total_calls || 0})`}
             </button>
           ))}
         </div>
@@ -307,8 +307,7 @@ const LeadDetail = ({ leadId, onClose, onUpdated, onEdit }: LeadDetailProps) => 
                   { icon: Calendar, label: "Shipping Date", value: lead.shipping_date || "Not set" },
                   { icon: Calendar, label: "Move Timeline", value: lead.move_timeline ? lead.move_timeline.replace('_', ' ') : "Not set" },
                   { icon: User, label: "Consultant", value: lead.assigned_to_name || lead.salesperson_name || "Unassigned" },
-                  { icon: IndianRupee, label: "Estimated Amount", value: lead.estimated_amount ? `₹${parseFloat(lead.estimated_amount).toLocaleString("en-IN")}` : "—" },
-                  { icon: IndianRupee, label: "Budget Range", value: lead.budget_min && lead.budget_max ? `₹${lead.budget_min} - ₹${lead.budget_max}` : "—" },
+
                 ].map(item => (
                   <div key={item.label} className="flex items-start gap-3 p-3 rounded-lg bg-muted/30">
                     <item.icon className="w-4 h-4 text-violet-500 mt-0.5 flex-shrink-0" />
@@ -339,6 +338,23 @@ const LeadDetail = ({ leadId, onClose, onUpdated, onEdit }: LeadDetailProps) => 
                   <p className="text-sm text-foreground whitespace-pre-wrap">{lead.notes}</p>
                 </div>
               )}
+            </div>
+          )}
+
+          {activeTab === "quotations" && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-semibold text-foreground">Quotations</h3>
+                <Button size="sm" onClick={() => {
+                  window.dispatchEvent(new CustomEvent("crm-navigate", { detail: { section: "quotation-new", payload: { leadId: lead.id } } }));
+                  onClose();
+                }}>
+                  Create Quotation
+                </Button>
+              </div>
+              <div className="bg-muted/30 p-8 rounded-xl border border-dashed border-border text-center">
+                <p className="text-sm text-muted-foreground">Click 'Create Quotation' to generate a new quote for this lead.</p>
+              </div>
             </div>
           )}
           

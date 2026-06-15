@@ -69,6 +69,11 @@ foreach ($allowed as $field) {
             $mStmt = $pdo->prepare("INSERT INTO crm_case_milestones (case_id, milestone, milestone_date, done_by) VALUES (?, ?, NOW(), ?)");
             $mStmt->execute([$id, $val, $adminId]);
 
+            // Auto-complete case when delivered
+            if ($val === 'delivered' && !array_key_exists('case_status', $input)) {
+                $updateFields[] = "case_status = 'completed'";
+            }
+
             // Auto-create or update order when job reaches operational milestones
             $operationalMilestones = ['packing_scheduled', 'in_transit', 'delivered'];
             if (in_array($val, $operationalMilestones)) {

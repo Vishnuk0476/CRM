@@ -7,10 +7,6 @@ require_once __DIR__ . '/helpers.php';
 require_once __DIR__ . '/jwt-auth.php'; // Reuse jwt parsing
 
 // Set CORS headers
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Authorization');
-
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit();

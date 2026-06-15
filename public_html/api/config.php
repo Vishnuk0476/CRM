@@ -94,9 +94,9 @@ $isAllowed = in_array($origin, $allowed_origins_static) || isLocalNetworkOrigin(
 if ($isAllowed) {
     header("Access-Control-Allow-Origin: $origin");
     header("Access-Control-Allow-Credentials: true");
+    header("Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE");
+    header("Access-Control-Allow-Headers: Content-Type, Authorization, X-CSRF-TOKEN, Accept-Language");
 }
-header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
 header("Content-Type: application/json; charset=UTF-8");
 header("X-Content-Type-Options: nosniff");
 header("X-Frame-Options: SAMEORIGIN");
@@ -123,9 +123,9 @@ if (in_array($_SERVER['REQUEST_METHOD'], ['POST', 'PUT', 'DELETE'])) {
 
 // ─── Database Configuration ───────────────────────────────────
 define('DB_HOST',    isset($_ENV['DB_HOST'])    ? $_ENV['DB_HOST']    : 'localhost');
-define('DB_NAME',    isset($_ENV['DB_NAME'])    ? $_ENV['DB_NAME']    : 'panyaglobal_db');
-define('DB_USER',    isset($_ENV['DB_USER'])    ? $_ENV['DB_USER']    : 'root');
-define('DB_PASS',    isset($_ENV['DB_PASS'])    ? $_ENV['DB_PASS']    : '');
+define('DB_NAME',    isset($_ENV['DB_NAME'])    ? $_ENV['DB_NAME']    : 'panyaglobalmoews_crmdb');
+define('DB_USER',    isset($_ENV['DB_USER'])    ? $_ENV['DB_USER']    : 'panyaglobalmoews_crmusr');
+define('DB_PASS',    isset($_ENV['DB_PASS'])    ? $_ENV['DB_PASS']    : 'Demo@PanyaCRM');
 define('DB_CHARSET', 'utf8mb4');
 
 // 🔥 DEBUG MODE ON KAR DIYA HAI 🔥

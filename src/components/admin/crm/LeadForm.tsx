@@ -171,8 +171,8 @@ const LeadForm = ({ onClose, onSaved, editData }: LeadFormProps) => {
             </div>
           </div>
 
-          {/* Row 4: Ship Date + Move Timeline + Property Type + Relocation Type */}
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+          {/* Row 4: Ship Date + Move Timeline + Property Type + Load Type + Relocation Type */}
+          <div className="grid grid-cols-1 sm:grid-cols-5 gap-4">
             <div>
               <label className="text-xs font-semibold text-foreground mb-1 block">Shipping Date</label>
               <Input type="date" value={form.shipping_date} onChange={e => handleChange("shipping_date", e.target.value)} />
@@ -196,13 +196,21 @@ const LeadForm = ({ onClose, onSaved, editData }: LeadFormProps) => {
               </select>
             </div>
             <div>
+              <label className="text-xs font-semibold text-foreground mb-1 block">Load Type</label>
+              <select value={form.load_type} onChange={e => handleChange("load_type", e.target.value)}
+                className="w-full px-3 py-2 text-sm rounded-md border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-violet-500/50">
+                <option value="">Select...</option>
+                {LOAD_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+              </select>
+            </div>
+            <div>
               <label className="text-xs font-semibold text-foreground mb-1 block">Relocation Type</label>
               <Input placeholder="e.g. Office, Residential" value={form.relocation_type} onChange={e => handleChange("relocation_type", e.target.value)} />
             </div>
           </div>
 
-          {/* Row 5: Temperature + Budgets + Family */}
-          <div className="grid grid-cols-1 sm:grid-cols-5 gap-4">
+          {/* Row 5: Temperature + Family */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className="text-xs font-semibold text-foreground mb-1 block">Lead Priority (Status)</label>
               <select value={form.temperature} onChange={e => handleChange("temperature", e.target.value)}
@@ -212,14 +220,6 @@ const LeadForm = ({ onClose, onSaved, editData }: LeadFormProps) => {
                 <option value="hot">Hot</option>
                 <option value="urgent">Urgent</option>
               </select>
-            </div>
-            <div>
-              <label className="text-xs font-semibold text-foreground mb-1 block">Min Budget (₹)</label>
-              <Input type="number" placeholder="0" value={form.budget_min} onChange={e => handleChange("budget_min", e.target.value)} />
-            </div>
-            <div>
-              <label className="text-xs font-semibold text-foreground mb-1 block">Max Budget (₹)</label>
-              <Input type="number" placeholder="0" value={form.budget_max} onChange={e => handleChange("budget_max", e.target.value)} />
             </div>
             <div>
               <label className="text-xs font-semibold text-foreground mb-1 block">Adults</label>

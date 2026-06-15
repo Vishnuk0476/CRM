@@ -25,7 +25,7 @@ const StatusBadge = ({ status }: { status: string }) => {
   );
 };
 
-export function QuotationBuilder({ onBack, initialView = "list" }: { onBack?: () => void; initialView?: "list" | "form" }) {
+export function QuotationBuilder({ onBack, initialView = "list", leadId = null }: { onBack?: () => void; initialView?: "list" | "form", leadId?: number | null }) {
   const { toast } = useToast();
   const [view, setView] = useState<"list" | "form">(initialView);
   const [quotations, setQuotations] = useState<any[]>([]);
@@ -137,7 +137,7 @@ export function QuotationBuilder({ onBack, initialView = "list" }: { onBack?: ()
   const fmt = (n: number) => "₹" + n.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
   if (view === "form") {
-    return <QuotationBuilderWizard editId={editId} onBack={() => { setView("list"); fetchList(); }} />;
+    return <QuotationBuilderWizard editId={editId} leadId={leadId} onBack={() => { setView("list"); fetchList(); }} />;
   }
 
   return (
@@ -220,7 +220,7 @@ export function QuotationBuilder({ onBack, initialView = "list" }: { onBack?: ()
                         <Edit2 className="w-3 h-3" /> Edit
                       </Button>
                       
-                      {q.status === "draft" && (
+                      {["draft", "sent", "revised", "rejected"].includes(q.status) && (
                         <Button size="sm" variant="outline" className="h-7 text-xs gap-1 border-blue-200 text-blue-700 hover:bg-blue-50"
                           onClick={(e) => { e.stopPropagation(); markSent(q.id); }}>
                           <Send className="w-3 h-3" /> Send

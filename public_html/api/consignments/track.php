@@ -8,9 +8,6 @@ require_once __DIR__ . '/../helpers.php';
 
 // CORS for public tracking page (allow all origins for this read-only endpoint)
 // config.php already sets restrictive CORS — override for this public endpoint only
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Accept');
 // Remove credentials header — public endpoint should NOT send cookies cross-origin
 header_remove('Access-Control-Allow-Credentials');
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(204); exit; }

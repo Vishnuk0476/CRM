@@ -22,6 +22,7 @@ export interface LineItem {
 
 export interface QuotationForm {
   case_id: string;
+  lead_id?: string | number;
   client_name: string;
   client_phone: string;
   client_email: string;
@@ -67,7 +68,7 @@ const DEFAULT_TERMS = `1. Payment is due within 7 days of invoice date.
 2. Goods are insured only if explicitly stated in writing.
 3. This quotation is valid for 15 days from the date of issue.`;
 
-export function QuotationBuilderWizard({ onBack, editId = null }: { onBack: () => void, editId?: number | null }) {
+export function QuotationBuilderWizard({ onBack, editId = null, leadId = null }: { onBack: () => void, editId?: number | null, leadId?: number | null }) {
   const { toast } = useToast();
   const pdfRef = useRef<HTMLDivElement>(null);
   const [step, setStep] = useState(1);
@@ -78,7 +79,7 @@ export function QuotationBuilderWizard({ onBack, editId = null }: { onBack: () =
     { service_name: "", description: "", quantity: 1, unit: "job", unit_price: 0, gst_rate: 18, line_total: 0 }
   ]);
   const [form, setForm] = useState<QuotationForm>({
-    case_id: "", client_name: "", client_phone: "", client_email: "",
+    case_id: "", lead_id: leadId || "", client_name: "", client_phone: "", client_email: "",
     client_address: "", client_company: "", client_gst: "",
     origin_city: "", origin_state: "", destination_city: "", destination_state: "",
     bhk_type: "", move_date: "", valid_until: "",
@@ -104,6 +105,27 @@ export function QuotationBuilderWizard({ onBack, editId = null }: { onBack: () =
             }
           }
         });
+    } else if (leadId) {
+      // Fetch lead to prepopulate
+      fetch(`/api/crm/leads.php?id=${leadId}`, { credentials: "include" })
+        .then(res => res.json())
+        .then(json => {
+          if (json.success && json.data) {
+             const lead = json.data.lead || json.data;
+             setForm(prev => ({ 
+               ...prev, 
+               lead_id: lead.id,
+               client_name: lead.customer_name || "",
+               client_phone: lead.phone || "",
+               client_email: lead.email || "",
+               origin_city: lead.origin_city || "",
+               destination_city: lead.destination_city || "",
+               bhk_type: lead.property_type || "",
+               move_date: lead.shipping_date || "",
+               relocation_type: lead.relocation_type || "Household Relocation",
+             }));
+          }
+        });
     } else {
       // Load draft from local storage if available
       try {
@@ -117,7 +139,7 @@ export function QuotationBuilderWizard({ onBack, editId = null }: { onBack: () =
         console.error("Failed to load quotation draft", e);
       }
     }
-  }, [editId]);
+  }, [editId, leadId]);
 
   // Auto-save to local storage on changes (only if not editing)
   useEffect(() => {

@@ -17,6 +17,7 @@ interface Lead {
   bhk_type: string;
   milestone: string;
   total_quoted: number;
+  total_invoiced: number;
   consultant_name: string;
   created_at_formatted: string;
 }
@@ -177,11 +178,11 @@ const LeadPipeline = () => {
                       )}
 
                       <div className="flex items-center justify-between pt-3 border-t border-gray-100/80">
-                        {lead.total_quoted ? (
+                        {lead.total_quoted || lead.total_invoiced ? (
                           <div className="flex flex-col">
                             <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Value</span>
                             <span className="text-sm font-black text-emerald-600">
-                              {formatCurrency(lead.total_quoted)}
+                              {formatCurrency(lead.total_quoted || lead.total_invoiced)}
                             </span>
                           </div>
                         ) : (
