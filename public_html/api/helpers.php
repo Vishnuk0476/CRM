@@ -117,9 +117,9 @@ function logActivity(
 
     $stmt = $pdo->prepare("
         INSERT INTO activity_logs
-            (admin_id, admin_email, admin_name, action, entity_type, entity_id, entity_reference, details, ip_address)
+            (id, admin_id, admin_email, admin_name, action, entity_type, entity_id, entity_reference, details, ip_address)
         VALUES
-            (:admin_id, :admin_email, :admin_name, :action, :entity_type, :entity_id, :entity_reference, :details, :ip)
+            (UUID(), :admin_id, :admin_email, :admin_name, :action, :entity_type, :entity_id, :entity_reference, :details, :ip)
     ");
     $stmt->execute([
         ':admin_id'         => $adminId,
