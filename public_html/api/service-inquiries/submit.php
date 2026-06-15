@@ -21,23 +21,23 @@ if (empty($serviceName)) jsonResponse(false, null, 'Service name required.', 400
 if (empty($name))         jsonResponse(false, null, 'Your name is required.', 400);
 if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) jsonResponse(false, null, 'Valid email required.', 400);
 
+$newId = bin2hex(random_bytes(16)); // Generate UUID fallback
+$referenceNumber = 'SI' . date('Ymd') . '-' . substr($newId, 0, 8);
+
 $stmt = $pdo->prepare("
-    INSERT INTO service_inquiries (service_name, service_type, name, email, phone, form_data)
-    VALUES (:service_name, :service_type, :name, :email, :phone, :form_data)
+    INSERT INTO service_inquiries (id, reference_number, service_name, service_type, name, email, phone, form_data)
+    VALUES (:id, :reference_number, :service_name, :service_type, :name, :email, :phone, :form_data)
 ");
 $stmt->execute([
-    ':service_name' => $serviceName,
-    ':service_type' => $serviceType,
-    ':name'         => $name,
-    ':email'        => $email,
-    ':phone'        => $phone,
-    ':form_data'    => json_encode($formData),
+    ':id'               => $newId,
+    ':reference_number' => $referenceNumber,
+    ':service_name'     => $serviceName,
+    ':service_type'     => $serviceType,
+    ':name'             => $name,
+    ':email'            => $email,
+    ':phone'            => $phone,
+    ':form_data'        => json_encode($formData),
 ]);
-
-// Get the generated reference_number
-$newId = $pdo->lastInsertId();
-$refRow = $pdo->query("SELECT reference_number FROM service_inquiries WHERE id = (SELECT MAX(id) FROM service_inquiries)")->fetch();
-$referenceNumber = $refRow['reference_number'] ?? 'SI-' . $newId;
 
 // Email to admin
 $adminBody = "<div class='field'><div class='label'>Reference</div><div class='value'>" . htmlspecialchars($referenceNumber) . "</div></div>
