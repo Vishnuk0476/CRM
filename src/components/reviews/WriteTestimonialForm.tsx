@@ -88,7 +88,8 @@ const WriteTestimonialForm = ({ isOpen, onClose }: WriteTestimonialFormProps) =>
       fd.append("type", "avatar");
       fd.append("avatar", file);
 
-      const res = await fetch("/api/testimonials/upload.php", { method: "POST", body: fd });
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || '/api';
+      const res = await fetch(`${baseUrl}/testimonials/upload.php`, { method: "POST", body: fd });
       const json = await res.json();
       if (!json.success) throw new Error(json.message || "Upload failed");
 
@@ -132,6 +133,7 @@ const WriteTestimonialForm = ({ isOpen, onClose }: WriteTestimonialFormProps) =>
       }
 
       const xhr = new XMLHttpRequest();
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || '/api';
       const response = await new Promise<any>((resolve, reject) => {
         xhr.upload.onprogress = (e) => {
           if (e.lengthComputable) setUploadProgress(Math.round((e.loaded / e.total) * 100));
@@ -140,7 +142,7 @@ const WriteTestimonialForm = ({ isOpen, onClose }: WriteTestimonialFormProps) =>
           try { resolve(JSON.parse(xhr.responseText)); } catch { reject(new Error("Invalid response")); }
         };
         xhr.onerror = () => reject(new Error("Network error"));
-        xhr.open("POST", "/api/testimonials/upload.php");
+        xhr.open("POST", `${baseUrl}/testimonials/upload.php`);
         xhr.send(fd);
       });
 
@@ -170,7 +172,8 @@ const WriteTestimonialForm = ({ isOpen, onClose }: WriteTestimonialFormProps) =>
   const onSubmit = async (values: TestimonialFormValues) => {
     setIsSubmitting(true);
     try {
-      const res = await fetch("/api/testimonials/submit.php", {
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || '/api';
+      const res = await fetch(`${baseUrl}/testimonials/submit.php`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
