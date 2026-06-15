@@ -9,12 +9,12 @@
 # DHYAN DEIN: https://your-live-domain.com ko apne real domain se replace karein!
 [[redirects]]
   from = "/api/*"
-  to = "https://your-live-domain.com/api/:splat"
+  to = "https://www.panyaglobalmovers.com/api/:splat"
   status = 200
   force = true
 
 [[redirects]]
   from = "/uploads/*"
-  to = "https://your-live-domain.com/uploads/:splat"
+  to = "https://www.panyaglobalmovers.com/uploads/:splat"
   status = 200
   force = true
